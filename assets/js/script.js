@@ -19,6 +19,30 @@ function updateRecentSearches() {
 }
     
 
+//weather api call
+function getWeatherData(city) {
+    const apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=imperial&appid=${apiKey}`;
+
+    fetch(apiUrl)
+        .then(response => {
+            if (!response.ok) {
+                alert("City not found, please check spelling and try again")
+                throw new Error(`HTTP error! Status: ${response.status}`);
+                
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log(data);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+}
+
+
+
+
 
 
 //search bar function to collect search 
@@ -27,20 +51,27 @@ let search = $("#search-box");
 let submit = $("#search-submit");
    
     
-submit.on("click", function (city) {
+submit.on("click", function () {
     let searchInput = search.val();
-    city = searchInput.charAt(0).toUpperCase() + searchInput.slice(1);
+    const city = searchInput.charAt(0).toUpperCase() + searchInput.slice(1);
     console.log(city);
-    
 
-    if (search.val() !== "" ){
+    //add search to recent searches & local storage
+    if (searchInput !== "") {
+        getWeatherData(city);
+
+        let searchCount = localStorage.getItem("searchCount") || 0;
+        searchCount++;
+        localStorage.setItem("searchCount", searchCount);
+        const searchKey = `search${searchCount}`;
+        localStorage.setItem(searchKey, city);
+
         recentSearches.push(city);
         updateRecentSearches();
-        localStorage.setItem("search", city);
-    }else{
+        
+    } else {
         alert("Search cannot be blank");
     }
-    
 });
 
 
@@ -49,7 +80,7 @@ submit.on("click", function (city) {
 //geocoding api call
 
 
-//weather api call
+
 
 
 
