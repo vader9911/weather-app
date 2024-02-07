@@ -37,32 +37,16 @@
                 <!-- main info display row -->
                 <div class="col-md mt-4 mx-5" id="info-main">
                     <div class="row align-items-start">
-                        <div class="row border border-primary rounded-1 mt-1 mb-5 py-1">
-                            <h1>test</h1>
+                        <div class="row border border-primary rounded-1 mt-1 mb-5 py-1" id="city-name">
+                            <h1 id="city-name-header">Weather</h1>
+                            <h3 >Temp: <span id="current-temp"> </span></h3>
+                            <h3>Wind: <span id="current-wind"> </span></h3>
+                            <h3>Humidity: <span id="current-humid"></span></h3>
                         </div>
 
                         <!-- 5 DAY LIST -->
-                        <div class="row border border-primary rounded-1 py-5">
-                            <ul class="list-group-flush">
-                                <!-- example 5 day info card -->
-                                <!-- list populated with recent city searches via js-->
-                                <li class="list-group-item">
-                                    <div class="card" style="width: 18rem;">
-                                        <img src="" class="card-img-top" alt="...">
-                                        <div class="card-body">
-                                            <h5 class="card-title" id="day">Card title</h5>
-                                        </div>
-        
-                                        <div>
-                                            <ul class="list-group">
-                                                <li class="list-group-item">An item</li>
-                                                <li class="list-group-item">A second item</li>
-                                                <li class="list-group-item">A third item</li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </li>
-                            </ul>
+                        <div class="row border border-primary rounded-1 py-5" id="lists-container">
+                           <h2 id="city-name-header">5 Day Forecast</h2> 
                         </div>
                     </div>
                 </div>  
