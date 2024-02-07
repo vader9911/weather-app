@@ -1,6 +1,7 @@
 document.addEventListener("DOMContentLoaded", function () {
   const apiKey = "fef58a10c0df34dec267d61fe76ef6af";
 
+
   let recentSearches = [];
 
   // Function to update the recent searches list
@@ -14,11 +15,48 @@ document.addEventListener("DOMContentLoaded", function () {
       ).appendTo(searchList);
     }
   }
-  //https://api.openweathermap.org/data/2.5/weather?q=austin&units=imperial&appid=fef58a10c0df34dec267d61fe76ef6af
+
+
+function getCityCoords(city) {
+  const apiUrl = `https://api.openweathermap.org/geo/1.0/direct?q=${city}&limit=1&appid=${apiKey}`;
+  console.log("called api");
+  
+  // Return the promise from fetch
+  return fetch(apiUrl)
+      .then((response) => {
+          if (!response.ok) {
+              throw new Error(`HTTP error! Status: ${response.status}`);
+          }
+          return response.json();
+      })
+      .then((data) => {
+          // Check if the response includes a valid city name
+          if (data && data.length > 0 && data[0].name) {
+              const { lat, lon } = data[0];
+              console.log(data[0])
+              // Return an object containing lat and lon
+              return { lat, lon };
+          } else {
+              throw new Error("City not found, please check spelling and try again");
+          }
+      })
+      .catch((error) => {
+          // Handle any errors that occurred during the fetch or data processing
+          console.error("Error:", error);
+          throw error; // Rethrow the error to be caught 
+      });
+}
+
+
+
+  
+
+
+
 
   //weather api call
-  function getWeatherData(city) {
-    const apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=imperial&appid=${apiKey}`;
+  function getWeatherData(lat, lon) {
+    const apiUrl = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${apiKey}`;
     console.log("called api");
     fetch(apiUrl)
       .then((response) => {
@@ -31,27 +69,32 @@ document.addEventListener("DOMContentLoaded", function () {
       })
       .then((data) => {
         // Check if the response includes a valid city name
-        if (data && data.name) {
+        if (data) {
           console.log(data);
 
-          let cityName = data.name;
-          let cityTemp = data.main.temp;
-          let cityWind = data;
-          let cityHumid = data;
-          $("#city-name-header").text(cityName);
-          $("#current-temp").text( cityTemp + "F")
+          // let cityName = data.name;
+          // let cityTemp = data.main.temp;
+          // let cityWind = data.wind.speed;
+          // let cityHumid = data.main.humidity;
+        
+          // $("#city-name-header").text(cityName);
+          // $("#current-temp").text(cityTemp + "F");
+          // $("#current-wind").text(cityWind + " m/s");
+          // $("#current-humidity").text(cityHumid + "%");
+
           generateLists();
-          // If it's a valid city, push it to recent searches
-          recentSearches.push(city);
-          updateRecentSearches();
+
+          
+
         } else {
-          alert("Invalid city data. Please try again.");
+            throw new Error("Invalid city data. Please try again.");
         }
       })
       .catch((error) => {
-        console.error("Error:", error);
+          console.error("Error:", error);
+          alert("Error fetching weather data. Please try again.");
       });
-  }
+}
 
   function generateLists() {
     // Get the container where lists will be appended
@@ -76,7 +119,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  //search bar function to collect search
+  // Search bar function to collect search
 
   let search = $("#search-box");
   let submit = $("#search-submit");
@@ -86,27 +129,57 @@ document.addEventListener("DOMContentLoaded", function () {
     let searchInput = search.val();
     const city = searchInput.charAt(0).toUpperCase() + searchInput.slice(1);
 
-    //add search to recent searches & local storage
+    // Add search to recent searches & local storage
     if (searchInput !== "") {
-      getWeatherData(city);
+    
+    // Run data functions
+      getCityCoords(city)
+    .then((coords) => {
+        // Once city coordinates are obtained, call getWeatherData
+      return getWeatherData(coords.lat, coords.lon);
+    })
+    .catch((error) => {
+        // Handle errors
+        console.error("Error: Failed to call API", error);
+        
+        alert("Error fetching city coordinates. Please try again.");
+    });
 
+      
+      
+      // If it's a valid city and not a duplicate search, push it to recent searches
+      const last10 = [];
       let searchCount = localStorage.getItem("searchCount") || 0;
+  
+        for (let index = searchCount; index > Math.max(searchCount - 10, 0); index--) {
+          
+          const recent = localStorage.getItem(index);
+          if(recent){
+            last10.push(recent)
+          }
+        };
+      //  If the city was in the last 10 searches do not add to recent searches
+      if (last10.includes(city)){
+        last10.length = 0;
+        return;
+      }else{
+        last10.length = 0;
+        recentSearches.push(city);
+        updateRecentSearches(); 
+      }
+
+      // Set search count and push search to local storage
       searchCount++;
       localStorage.setItem("searchCount", searchCount);
-      const searchKey = `search${searchCount}`;
+      const searchKey = `${searchCount}`;
       localStorage.setItem(searchKey, city);
-      localStorage.removeItem();
+
+      
+      
+
     } else {
       alert("Search cannot be blank");
     }
   });
 
-  //Function to pop city data to the info card
-  // function checkWeather () {
-  //     let cityName = data.name;
-  //     let cityWeather = data.main.temp;
-
-  //     console.log(cityName, cityWeather);
-
-  // }
 });
