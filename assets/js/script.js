@@ -47,83 +47,132 @@ function getCityCoords(city) {
       });
 }
 
+          
 
-
+// Method to set the icon based on weather conditions
+function getWeatherIcon(weatherId) {
+  // Switch statement to map weather conditions to emojis
+  switch (weatherId.toLowerCase()) {
+      case 'clear':
+          return '☀️'; // Clear
+      case 'clouds':
+          return '☁️'; // Clouds
+      case 'rain':
+          return '🌧️'; // Rain
+      case 'drizzle':
+          return '🌦️'; // Drizzle
+      case 'thunderstorm':
+          return '⛈️'; // Thunderstorm
+      case 'snow':
+          return '❄️'; // Snow
+      case 'mist':
+      case 'smoke':
+      case 'haze':
+      case 'dust':
+      case 'fog':
+      case 'sand':
+      case 'ash':
+          return '🌫️'; // Mist, Smoke, Haze, Dust, Fog, Sand, Ash
+      case 'squall':
+          return '💨'; // Squall
+      case 'tornado':
+          return '🌪️'; // Tornado
+      default:
+          return ''; // Unknown weather condition
+  }
+}
   
 
 
 
 
   //weather api call
-  function getWeatherData(lat, lon) {
-    const apiUrl = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&units=imperial&appid=${apiKey}`;
-    console.log("called api");
-    fetch(apiUrl)
+function getWeatherData(lat, lon) {
+  const apiUrl = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&units=imperial&appid=${apiKey}`;
+  console.log("called api");
+  fetch(apiUrl)
       .then((response) => {
-        if (!response.ok) {
-          alert("City not found, please check spelling and try again");
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        return response.json();
+          if (!response.ok) {
+              alert("City not found, please check spelling and try again");
+              throw new Error(`HTTP error! Status: ${response.status}`);
+          }
+          return response.json();
       })
       .then((data) => {
-        // Check if the response includes a valid city name
-        if (data) {
-          console.log(data);
-
-          function generateLists() {
-            // Get the container where lists will be appended
-            const container = $("#lists-container");
-            // Reset lists
-            container.empty();
-            // Generate 5 day forecast lists
-            for (let i = 0; i < 5; i++) {
-              // Calculate the index for each day (24-hour intervals)
-              const index = i * 8; 
-          
-              // Create a new list for each day
-              const newList = $("<ul>").addClass("list-group m-2 day-" + (i + 1));
-          
-              // Access data for the current day's index
-              if (index < data.list.length) {
-                  const listItem = $("<li>")
-                      .addClass("list-group-item p-3")
-                      .attr("id", `${i}-0`); // Setting ID for the day
-          
-                  // Fill out the list item with data for the corresponding day
-                  const date = data.list[index].dt_txt;
-                  const cityTemp = data.list[index].main.temp;
-                  const cityWind = data.list[index].wind.speed;
-                  const cityHumid = data.list[index].main.humidity;
-          
-                  // Append the data to the list item
-                  listItem.append(`<p>Date: ${date}</p>`);
-                  listItem.append(`<p>Temperature: ${cityTemp}F</p>`);
-                  listItem.append(`<p>Wind: ${cityWind} mph</p>`);
-                  listItem.append(`<p>Humidity: ${cityHumid}%</p>`);
-          
-                  // Append the list item to the list for the day
-                  newList.append(listItem);
-              }
-          
-              // Append the new list for the day to the container
-              container.append(newList);
-            }
+          // Check if the response includes valid data
+          if (data) {
+              console.log(data);
+              generateLists(data); // Call generateLists function with the retrieved data
+          } else {
+              alert("No data received from the API");
           }
-          generateLists();
-
-          
-          
-
-        } else {
-            throw new Error("Invalid city data. Please try again.");
-        }
       })
       .catch((error) => {
           console.error("Error:", error);
           alert("Error fetching weather data. Please try again.");
       });
 }
+
+// Define generateLists function to create forecast lists
+function generateLists(data) {
+
+  // Set current weather
+  let cityName = data.city.name ;
+  let cityTemp = data.list[0].main.temp;
+  let cityWind = data.list[0].wind.speed;
+  let cityHumid = data.list[0].main.humidity;
+      
+  $("#city-name-header").text(cityName);
+  $("#current-temp").text(cityTemp + "F");
+  $("#current-wind").text(cityWind + " mph");
+  $("#current-humid").text(cityHumid + "%");
+
+  // Get the container where lists will be appended
+  const container = $("#lists-container");
+  // Reset lists
+  container.empty();
+
+  // Generate 5 day forecast lists
+  for (let i = 0; i < 5; i++) {
+      // Calculate the index for each day (24-hour intervals)
+      const index = i * 8;
+
+      // Create a new list for each day
+      const newList = $("<ul>").addClass("list-group m-2 day-" + (i + 1));
+
+      // Access data for the current day's index
+      if (index < data.list.length) {
+          const listItem = $("<li>")
+              .addClass("list-group-item p-3")
+              .attr("id", `${i}-0`); // Setting ID for the day
+
+          // Fill out the list item with data for the corresponding day
+          const date = data.list[index].dt_txt;
+          const cityTemp = data.list[index].main.temp;
+          const cityWind = data.list[index].wind.speed;
+          const cityHumid = data.list[index].main.humidity;
+          const weatherId = data.list[index].weather[0].main;
+
+        
+          // Get the weather icon
+          const weatherIcons = getWeatherIcon(weatherId);
+
+          // Append the data to the list item
+          listItem.append(`<p class='bg-info-subtle p-2'>Date: ${date}</p>`);
+          listItem.append(`<p>Weather: ${weatherIcons}</p>`); // Use weather icons
+          listItem.append(`<p>Temperature: ${cityTemp}F</p>`);
+          listItem.append(`<p>Wind: ${cityWind} mph</p>`);
+          listItem.append(`<p>Humidity: ${cityHumid}%</p>`);
+
+          // Append the list item to the list for the day
+          newList.append(listItem);
+      }
+
+      // Append the new list for the day to the container
+      container.append(newList);
+  }
+}
+
 
   
 
