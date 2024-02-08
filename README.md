@@ -9,7 +9,6 @@ This is a simple webpage to show the weather for a searched city. It includes cu
 ## Table of Contents
 
 - [Features](#features)
-- [Usage](#usage)
 - [License](#license)
 - [Contributing](#contributing)
 - [Author](#author)
