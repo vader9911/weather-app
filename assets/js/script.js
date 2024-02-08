@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
   const apiKey = "fef58a10c0df34dec267d61fe76ef6af";
-
+  localStorage.clear();
 
   let recentSearches = [];
 
@@ -56,7 +56,7 @@ function getCityCoords(city) {
 
   //weather api call
   function getWeatherData(lat, lon) {
-    const apiUrl = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${apiKey}`;
+    const apiUrl = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&units=imperial&appid=${apiKey}`;
     console.log("called api");
     fetch(apiUrl)
       .then((response) => {
@@ -64,7 +64,6 @@ function getCityCoords(city) {
           alert("City not found, please check spelling and try again");
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
-        console.log(response);
         return response.json();
       })
       .then((data) => {
@@ -72,18 +71,48 @@ function getCityCoords(city) {
         if (data) {
           console.log(data);
 
-          // let cityName = data.name;
-          // let cityTemp = data.main.temp;
-          // let cityWind = data.wind.speed;
-          // let cityHumid = data.main.humidity;
-        
-          // $("#city-name-header").text(cityName);
-          // $("#current-temp").text(cityTemp + "F");
-          // $("#current-wind").text(cityWind + " m/s");
-          // $("#current-humidity").text(cityHumid + "%");
-
+          function generateLists() {
+            // Get the container where lists will be appended
+            const container = $("#lists-container");
+            // Reset lists
+            container.empty();
+            // Generate 5 day forecast lists
+            for (let i = 0; i < 5; i++) {
+              // Calculate the index for each day (24-hour intervals)
+              const index = i * 8; 
+          
+              // Create a new list for each day
+              const newList = $("<ul>").addClass("list-group m-2 day-" + (i + 1));
+          
+              // Access data for the current day's index
+              if (index < data.list.length) {
+                  const listItem = $("<li>")
+                      .addClass("list-group-item p-3")
+                      .attr("id", `${i}-0`); // Setting ID for the day
+          
+                  // Fill out the list item with data for the corresponding day
+                  const date = data.list[index].dt_txt;
+                  const cityTemp = data.list[index].main.temp;
+                  const cityWind = data.list[index].wind.speed;
+                  const cityHumid = data.list[index].main.humidity;
+          
+                  // Append the data to the list item
+                  listItem.append(`<p>Date: ${date}</p>`);
+                  listItem.append(`<p>Temperature: ${cityTemp}F</p>`);
+                  listItem.append(`<p>Wind: ${cityWind} mph</p>`);
+                  listItem.append(`<p>Humidity: ${cityHumid}%</p>`);
+          
+                  // Append the list item to the list for the day
+                  newList.append(listItem);
+              }
+          
+              // Append the new list for the day to the container
+              container.append(newList);
+            }
+          }
           generateLists();
 
+          
           
 
         } else {
@@ -96,28 +125,7 @@ function getCityCoords(city) {
       });
 }
 
-  function generateLists() {
-    // Get the container where lists will be appended
-    const container = $("#lists-container");
-    // Reset lists
-    container.empty();
-    // Generate 5 lists
-    for (let i = 1; i <= 5; i++) {
-      // Create a new list
-      const newList = $("<ul>").addClass("list-group m-2 day-" + i);
-    
-      // Create list items with unique IDs
-      for (let j = 1; j <= 4; j++) {
-        const listItem = $("<li>")
-          .addClass("list-group-item p-3")
-          .attr("id", `${j}-${i}`);
-        newList.append(listItem);
-      }
-
-      // Append the new list to the container
-      container.append(newList);
-    }
-  }
+  
 
   // Search bar function to collect search
 
