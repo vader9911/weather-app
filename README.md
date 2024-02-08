@@ -47,3 +47,4 @@ If you have any questions or need further assistance, feel free to [contact me o
 ## Acknowledgments
 
 - [MDN](https://developer.mozilla.org/en-US/) - Resources for Developers, by Developers.
+- [OpenWeather](https://openweathermap.org/api) - Weather Api used
